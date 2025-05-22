@@ -146,6 +146,7 @@ class MainWindow(QMainWindow):
         exit_action.triggered.connect(self.close)
         run_icon = style.standardIcon(QStyle.SP_MediaPlay)
 
+        # region buttons
         open_button = QPushButton()
         open_button.setIcon(open_icon)
         open_button.setIconSize(QSize(30, 30))
@@ -174,6 +175,9 @@ class MainWindow(QMainWindow):
         #run_button.clicked.disconnect()  # Remove previous connection if any
         run_button.clicked.connect(self.run_selected_analysis)
         run_button.setToolTip("Run Analysis")
+        
+        # endregion buttons
+        
         title_bar_layout.addWidget(run_button, alignment=Qt.AlignRight)
 
         splitter = QSplitter(Qt.Vertical)
@@ -185,6 +189,8 @@ class MainWindow(QMainWindow):
         splitter.addWidget(bottom_frame)
 
         top_layout = QHBoxLayout(top_frame)
+        
+        # region container
         
         tree_label = QLabel("XML Structure")
         xml_label = QLabel("XML Input")
@@ -248,6 +254,9 @@ class MainWindow(QMainWindow):
         analysis_scroll_area.setWidget(self.analysis_text)
         analysis_layout.addWidget(analysis_scroll_area)
         top_layout.addWidget(analysis_container)
+
+        # endregion container
+        
 
         bottom_layout = QVBoxLayout(bottom_frame)
         log_label = QLabel("Log Output")
