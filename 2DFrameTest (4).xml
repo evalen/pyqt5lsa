@@ -1,0 +1,49 @@
+<Frame2D> 
+<title>Ferrante Example</title>
+<code unitS='ksi'>
+code=AISC fy=36
+</code>
+<nodes unitL='cm'>
+node1	 0.0    0.0
+node2	 0.0 	600.0
+node3	 1000. 850.0
+node4	 2000. 600.0
+node5	 2000. 0.
+6	 	3000. 	850.
+7	 	4000. 	600.
+8	 	4000. 	0.
+</nodes>
+<section unitL='inch' >
+400 Tube OD=8.0 WTH=0.75 
+200 Tube OD=6.0 WTH=0.5
+</section>
+<material>
+400 Steel
+</material>	
+<elements>	
+elem1 	node1 	node2 	400 400
+2 	node5 	node4 	400 400
+3 	8 	7 	400 400
+4 	node2 	node3 	200 400
+5 	node3 	node4 	200 400
+6 	node4 	6 	200 400
+7 	6 	7 	200 400
+</elements>
+<boundary>	
+node1 ENCASTRE 
+node5 ENCASTRE
+8 ENCASTRE
+</boundary>
+<loading unitL='m' unitF='N' id="1"> 
+<loaded-nodes unitF='N' unitL='m'>
+node2 Px=30000.
+node3 Py=-40000.
+6 Py=-40000.
+</loaded-nodes>
+</loading>
+<loading  id="2">
+<loaded-members unitF='N'>
+elem1 load_type=pload P=30000. a=0.5 sysref=global direction=(1,0,0.)   
+</loaded-members>
+</loading>
+</Frame2D>
