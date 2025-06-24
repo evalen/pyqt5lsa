@@ -132,12 +132,12 @@ class MainWindow(QMainWindow):
         
         self.analysis_type_combo = QComboBox()
         self.analysis_type_combo.addItems([
-            "Static Linear Analysis",
-            "Static Nonlinear Analysis",
-            "Dynamic Linear Analysis",
-            "Dynamic Nonlinear Analysis",
-            "Frequency Domain Analysis",
-            "Buckling Analysis"
+            "Static Linear",
+            "Static Nonlinear",
+            "Dynamic Linear",
+            "Dynamic Nonlinear",
+            "Frequency Domain",
+            "Buckling"
         ])
         self.analysis_type_combo.setCurrentIndex(0)
         title_bar_layout.addWidget(self.analysis_type_combo, alignment=Qt.AlignRight)        
@@ -303,7 +303,7 @@ class MainWindow(QMainWindow):
         # run_menu.addAction(run_action)
 
         analysis_action = QAction("Analysis", self)
-        analysis_action.triggered.connect(self.run_analysis)
+        analysis_action.triggered.connect(self.run_selected_analysis)
         run_menu.addAction(analysis_action)
         
         display_menu = QMenu("Display", self)
@@ -474,45 +474,48 @@ class MainWindow(QMainWindow):
         
     def run_selected_analysis(self):
         anal_type = self.analysis_type_combo.currentText()
-        if anal_type == "Static Linear Analysis":
-            self.run_static_linear()
-        elif anal_type == "Static Nonlinear Analysis":
-            self.run_newton_loop()
-        elif anal_type == "Dynamic Linear Analysis":
-            self.run_dynamic_linear()
-        elif anal_type == "Dynamic Nonlinear Analysis":
-            self.run_dynamic_nonlinear()
-        elif anal_type == "Frequency Domain Analysis":
-            self.run_frequency_domain()
-        elif anal_type == "Buckling Analysis":
-            self.run_buckling()
+        if anal_type == "Static Linear":
+            #self.run_static_linear()
+            self.db.run_analysis(anal_type)#log_file=log_file)
+        elif anal_type == "Static Nonlinear":
+            #self.db.run_newton_loop()
+            self.db.run_static_nonlinear()
+        elif anal_type == "Dynamic Linear":
+            self.db.run_dynamic_linear()
+        elif anal_type == "Dynamic Nonlinear":
+            self.db.run_dynamic_nonlinear()
+        elif anal_type == "Frequency Domain":
+            self.db.run_frequency_domain()
+        elif anal_type == "Buckling":
+            self.db.run_buckling()
         else:
             QMessageBox.warning(self, "Analysis", "Unknown analysis type selected.")
 
-    def run_static_linear(self):
-        log_file = "analysis.log"
-        #self.db.run_analysis(log_file=log_file)
-        self.run_analysis()#log_file=log_file)
-        with open(log_file, "r") as log:
-            self.analysis_text.setText(log.read())
-        with open(self.db.results_file, "r") as f:
-            data = f.read()
-            self.log_text.setText(data)
 
-    def run_static_nonlinear(self):
-        QMessageBox.information(self, "Not Implemented", "Static Nonlinear Analysis is not yet implemented.")
+    # def run_static_linear(self):
+    #     log_file = "analysis.log"
+    #     #self.db.run_analysis(log_file=log_file)
+    #     self.run_analysis()#log_file=log_file)
+    #     with open(log_file, "r") as log:
+    #         self.analysis_text.setText(log.read())
+    #     with open(self.db.results_file, "r") as f:
+    #         data = f.read()
+    #         self.log_text.setText(data)
 
-    def run_dynamic_linear(self):
-        QMessageBox.information(self, "Not Implemented", "Dynamic Linear Analysis is not yet implemented.")
+    # def run_static_nonlinear(self):
+    #     QMessageBox.information(self, "Not Implemented", "Static Nonlinear Analysis is not yet implemented.")
 
-    def run_dynamic_nonlinear(self):
-        QMessageBox.information(self, "Not Implemented", "Dynamic Nonlinear Analysis is not yet implemented.")
+    # def run_dynamic_linear(self):
+    #     QMessageBox.information(self, "Not Implemented", "Dynamic Linear Analysis is not yet implemented.")
 
-    def run_frequency_domain(self):
-        QMessageBox.information(self, "Not Implemented", "Frequency Domain Analysis is not yet implemented.")
+    # def run_dynamic_nonlinear(self):
+    #     QMessageBox.information(self, "Not Implemented", "Dynamic Nonlinear Analysis is not yet implemented.")
 
-    def run_buckling(self):
-        QMessageBox.information(self, "Not Implemented", "Buckling Analysis is not yet implemented.")                        
+    # def run_frequency_domain(self):
+    #     QMessageBox.information(self, "Not Implemented", "Frequency Domain Analysis is not yet implemented.")
+
+    # def run_buckling(self):
+    #     QMessageBox.information(self, "Not Implemented", "Buckling Analysis is not yet implemented.")                        
 
 def main():
     app = QApplication(sys.argv)

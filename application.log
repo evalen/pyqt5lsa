@@ -34,3 +34,16 @@ Member Loads: 1
 xml_reader completed successfully.
 \u2705 xml_reader succeeded
 \U0001f4c2 Log file exists: True
+Running analysis...
+
+Stiffness matrix assembled...
+
+Solver started...
+
+Gaussian elimination completed. Return code : 1
+
+Solvers finished Time: 8.04 milliseconds
+
+Custom solver does NOT match SciPy's solveh_banded! Using SciPy's result.
+scipy ab shape: (9, 24)
+al shape: (24, 2)
