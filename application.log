@@ -1,0 +1,36 @@
+xml_reader called with file: C:/Dev/pyqt5lsa/2DFrameTest (4).xml
+Sanitizing XML...
+\u2699\ufe0f  Sanitizing file: C:/Dev/pyqt5lsa/2DFrameTest (4).xml
+\U0001f4cf Read 49 lines from file.
+XML root tag: Frame2D
+Structure type: Frame2D — DOF per node: 3
+Processing tag: title
+Project Name: Ferrante Example                                                                
+Processing tag: code
+Code AISC Fy= 248211.26
+Processing tag: nodes
+Number of Nodes: 8
+Processing tag: section
+Number of Sections: 2
+Processing tag: material
+Number of Materials: 1
+Processing tag: elements
+Number of Elements: 7
+Processing tag: boundary
+Number of Boundaries: 3
+Processing tag: loading
+Processed loading case ID: 1
+Processing tag: loading
+Processed loading case ID: 2
+Number of loading cases: 2
+Loading Case ID: 1
+Node Loads: 3
+Member Loads: 0
+---
+Loading Case ID: 2
+Node Loads: 0
+Member Loads: 1
+---
+xml_reader completed successfully.
+\u2705 xml_reader succeeded
+\U0001f4c2 Log file exists: True

@@ -1,10 +1,19 @@
 import sys
 import xml.etree.ElementTree as ET
+from xml.sax import handler
 import numpy as np
 from datetime import datetime
 from scipy.linalg import solveh_banded
 from numpy.testing import assert_almost_equal
 import logging
+import os
+
+logging.basicConfig(
+    filename="application.log",
+    filemode="w",
+    level=logging.INFO,
+    format="%(message)s"
+)
 
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
@@ -241,7 +250,6 @@ class MainWindow(QMainWindow):
         
 
         analysis_container = QWidget()
-
         analysis_layout = QVBoxLayout(analysis_container)
         analysis_layout.addWidget(analysis_label)
         self.analysis_text = QTextEdit()
@@ -290,13 +298,13 @@ class MainWindow(QMainWindow):
         run_menu = QMenu("Run", self)
         menu_bar.addMenu(run_menu)
 
-        run_action = QAction("Run Analysis", self)
-        run_action.triggered.connect(self.run_selected_analysis)
-        run_menu.addAction(run_action)
+        # run_action = QAction("Run Analysis", self)
+        # run_action.triggered.connect(self.run_selected_analysis)
+        # run_menu.addAction(run_action)
 
-        # analysis_action = QAction("Analysis", self)
-        # analysis_action.triggered.connect(self.run_analysis)
-        # run_menu.addAction(analysis_action)
+        analysis_action = QAction("Analysis", self)
+        analysis_action.triggered.connect(self.run_analysis)
+        run_menu.addAction(analysis_action)
         
         display_menu = QMenu("Display", self)
         menu_bar.addMenu(display_menu)
@@ -334,6 +342,26 @@ class MainWindow(QMainWindow):
 
                 index = filename.index('.')
                 self.db.results_file = filename[:index] + '_results.txt'
+                logging.info("✅ xml_reader succeeded")
+                for handler in logging.getLogger().handlers:
+                    handler.flush()
+
+                # File check
+                log_path = "application.log"
+                logging.info("📂 Log file exists: %s", os.path.exists(log_path))
+
+                try:
+                    with open(log_path, "r", encoding="utf-8", errors="replace") as f:
+                        log_content = f.read()
+                        print(f"📝 Log content length: {len(log_content)}")
+                        self.analysis_text.setPlainText(log_content)
+                        print("✅ Log displayed in analysis_text")
+                except Exception as e:
+                    import traceback
+                    traceback.print_exc()
+                    logging.error("❌ Failed to load log into analysis_text: %s", e)
+
+
             except Exception as e:
                 QMessageBox.critical(self, 'Open Error', str(e))
             
@@ -374,39 +402,57 @@ class MainWindow(QMainWindow):
         for child in element:
             self.insert_tree_items(node, child)
 
-    # def run_analysis(self):
-    #     """Run the structural analysis"""
-    #     self.analysis_text.append("Running analysis...\n")
-    #     self.db.k_assem()
-    #     self.analysis_text.append("Stiffness matrix completed...\n")
-    #     with open("stiff_output.txt", "w") as file:
-    #         for i in range(self.db.ne):
-    #             elst = self.db.stored_elst_matrices[i]
-    #             file.write(f"Element: {i+1}\n{elst}")
-    #         self.db.bound3()
-    #         file.write("tk matrix:\n")
-    #         file.write(f"{self.db.tk}")
-    #         file.write("al matrix:\n")
-    #         file.write(f"{self.db.al}")
-    #     self.analysis_text.append("Solver started...\n")
-    #     start_time = datetime.now()
-    #     save_tk = self.db.tk.copy()
-    #     save_al = self.db.al.copy()
-    #     self.db.bgaussgen(self.db.tk, self.db.al)
-    #     end_time = datetime.now()
-    #     execution_time = end_time - start_time
-    #     self.analysis_text.append(f"Solver finished Time: {execution_time.total_seconds() * 1000:.2f} milliseconds\n")
-    #     ab = save_tk.T
-    #     al_scipy = solveh_banded(ab, save_al, lower=True)
-    #     try:
-    #         assert_almost_equal(self.db.al.flatten(), al_scipy, decimal=6)
-    #     except AssertionError:
-    #         self.db.al = al_scipy.reshape(self.db.al.shape)
-    #     self.db.forcegen()
-    #     self.db.outptgen(self.db.results_file)
-    #     with open(self.db.results_file, "r") as f:
-    #         data = f.read()
-    #         self.log_text.setText(data)
+    def fortran_to_scipy_banded_lower(self,tk):
+        """
+        Convert Fortran-style lower-banded matrix (n, bw) to SciPy's (bw, n) format for lower=True.
+        tk[i, 0] = A[i, i] (main diagonal)
+        tk[i, 1] = A[i, i-1] (1st subdiagonal)
+        tk[i, 2] = A[i, i-2] (2nd subdiagonal)
+        ...
+        """
+        n, bw = tk.shape
+        ab = np.zeros((bw, n))
+        for band in range(bw):
+            for i in range(band, n):
+                ab[bw - band - 1, i] = tk[i, band]
+        return ab
+
+    def run_analysis(self, log_file="analysis.log"):
+        """Run the structural analysis"""
+        self.analysis_text.append("Running analysis...\n")
+        self.db.k_assem()
+        self.analysis_text.append("Stiffness matrix completed...\n")
+        with open("stiff_output.txt", "w") as file:
+            for i in range(self.db.ne):
+                elst = self.db.stored_elst_matrices[i]
+                file.write(f"Element: {i+1}\n{elst}")
+            self.db.bound3()
+            file.write("tk matrix:\n")
+            file.write(f"{self.db.tk}")
+            file.write("al matrix:\n")
+            file.write(f"{self.db.al}")
+        self.analysis_text.append("Solver started...\n")
+        start_time = datetime.now()
+        save_tk = self.db.tk.copy()
+        save_al = self.db.al.copy()
+        self.db.bgaussgen(self.db.tk, self.db.al)
+        end_time = datetime.now()
+        execution_time = end_time - start_time
+        self.analysis_text.append(f"Solver finished Time: {execution_time.total_seconds() * 1000:.2f} milliseconds\n")
+        #ab = save_tk.T
+        ab = self.fortran_to_scipy_banded_lower(save_tk)
+        print("ab shape:", ab.shape)
+        print("al shape:", save_al.shape)
+        al_scipy = solveh_banded(ab, save_al, lower=True)
+        try:
+            assert_almost_equal(self.db.al.flatten(), al_scipy, decimal=6)
+        except AssertionError:
+            self.db.al = al_scipy.reshape(self.db.al.shape)
+        self.db.forcegen()
+        self.db.outptgen(self.db.results_file)
+        with open(self.db.results_file, "r") as f:
+            data = f.read()
+            self.log_text.setText(data)
             
     def display_wireframe(self):
         """Display the wireframe 3D plot"""
@@ -431,7 +477,7 @@ class MainWindow(QMainWindow):
         if anal_type == "Static Linear Analysis":
             self.run_static_linear()
         elif anal_type == "Static Nonlinear Analysis":
-            self.run_static_nonlinear()
+            self.run_newton_loop()
         elif anal_type == "Dynamic Linear Analysis":
             self.run_dynamic_linear()
         elif anal_type == "Dynamic Nonlinear Analysis":
@@ -445,7 +491,8 @@ class MainWindow(QMainWindow):
 
     def run_static_linear(self):
         log_file = "analysis.log"
-        self.db.run_analysis(log_file=log_file)
+        #self.db.run_analysis(log_file=log_file)
+        self.run_analysis()#log_file=log_file)
         with open(log_file, "r") as log:
             self.analysis_text.setText(log.read())
         with open(self.db.results_file, "r") as f:
