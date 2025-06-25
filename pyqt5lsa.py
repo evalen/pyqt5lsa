@@ -298,10 +298,6 @@ class MainWindow(QMainWindow):
         run_menu = QMenu("Run", self)
         menu_bar.addMenu(run_menu)
 
-        # run_action = QAction("Run Analysis", self)
-        # run_action.triggered.connect(self.run_selected_analysis)
-        # run_menu.addAction(run_action)
-
         analysis_action = QAction("Analysis", self)
         analysis_action.triggered.connect(self.run_selected_analysis)
         run_menu.addAction(analysis_action)
@@ -342,24 +338,24 @@ class MainWindow(QMainWindow):
 
                 index = filename.index('.')
                 self.db.results_file = filename[:index] + '_results.txt'
-                logging.info("✅ xml_reader succeeded")
+                logging.info(f"✅ xml_reader succeeded")
                 for handler in logging.getLogger().handlers:
                     handler.flush()
 
                 # File check
                 log_path = "application.log"
-                logging.info("📂 Log file exists: %s", os.path.exists(log_path))
+                logging.info(f"📂 Log file exists: {os.path.exists(log_path)}")
 
                 try:
                     with open(log_path, "r", encoding="utf-8", errors="replace") as f:
                         log_content = f.read()
-                        print(f"📝 Log content length: {len(log_content)}")
+                        logging.info(f"📝 Log content length: {len(log_content)}")
                         self.analysis_text.setPlainText(log_content)
-                        print("✅ Log displayed in analysis_text")
+                        logging.info(f"✅ Log displayed in analysis_text")
                 except Exception as e:
                     import traceback
                     traceback.print_exc()
-                    logging.error("❌ Failed to load log into analysis_text: %s", e)
+                    logging.error(f"❌ Failed to load log into analysis_text: {e}")
 
 
             except Exception as e:
@@ -475,8 +471,10 @@ class MainWindow(QMainWindow):
     def run_selected_analysis(self):
         anal_type = self.analysis_type_combo.currentText()
         if anal_type == "Static Linear":
-            #self.run_static_linear()
-            self.db.run_analysis(anal_type)#log_file=log_file)
+            self.db.run_analysis(anal_type)
+            with open(self.db.results_file, "r") as f:
+                data = f.read()
+            self.log_text.setText(data)
         elif anal_type == "Static Nonlinear":
             #self.db.run_newton_loop()
             self.db.run_static_nonlinear()
@@ -492,30 +490,7 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Analysis", "Unknown analysis type selected.")
 
 
-    # def run_static_linear(self):
-    #     log_file = "analysis.log"
-    #     #self.db.run_analysis(log_file=log_file)
-    #     self.run_analysis()#log_file=log_file)
-    #     with open(log_file, "r") as log:
-    #         self.analysis_text.setText(log.read())
-    #     with open(self.db.results_file, "r") as f:
-    #         data = f.read()
-    #         self.log_text.setText(data)
-
-    # def run_static_nonlinear(self):
-    #     QMessageBox.information(self, "Not Implemented", "Static Nonlinear Analysis is not yet implemented.")
-
-    # def run_dynamic_linear(self):
-    #     QMessageBox.information(self, "Not Implemented", "Dynamic Linear Analysis is not yet implemented.")
-
-    # def run_dynamic_nonlinear(self):
-    #     QMessageBox.information(self, "Not Implemented", "Dynamic Nonlinear Analysis is not yet implemented.")
-
-    # def run_frequency_domain(self):
-    #     QMessageBox.information(self, "Not Implemented", "Frequency Domain Analysis is not yet implemented.")
-
-    # def run_buckling(self):
-    #     QMessageBox.information(self, "Not Implemented", "Buckling Analysis is not yet implemented.")                        
+                  
 
 def main():
     app = QApplication(sys.argv)
